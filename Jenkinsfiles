@@ -1,0 +1,84 @@
+###
+
+
+pipeline {
+    agent any
+    
+    environment {
+        // Define environment variables here
+        MAVEN_HOME = tool 'Maven'
+        SONARQUBE_URL = 'http://sonarqube-server:9000'
+        ARTIFACTORY_URL = 'http://artifactory-server:8081/artifactory'
+        DOCKER_REGISTRY = 'your-docker-registry'
+        DOCKER_IMAGE_NAME = 'your-docker-image'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout source code from Git
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                // Build the project using Maven
+                sh "${MAVEN_HOME}/bin/mvn clean install"
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                // Run SonarQube analysis
+                withSonarQubeEnv('SonarQube') {
+                    sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
+                }
+            }
+        }
+        
+        stage('Publish to Artifactory') {
+            steps {
+                // Publish artifacts to JFrog Artifactory
+                script {
+                    def rtMaven = Artifactory.newMavenBuild()
+                    rtMaven.resolver server: 'Artifactory-Server', repo: 'maven-releases'
+                    rtMaven.deployer server: 'Artifactory-Server', repo: 'maven-releases'
+                    rtMaven.deployer.deployArtifacts = false
+                    rtMaven.run pom: 'pom.xml', goals: 'clean deploy'
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                // Build Docker image
+                script {
+                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                // Push Docker image to registry
+                script {
+                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
+                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}").push()
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            // Additional steps to be executed on successful build
+            echo 'CI/CD pipeline completed successfully!'
+        }
+        failure {
+            // Additional steps to be executed on build failure
+            echo 'CI/CD pipeline failed!'
+        }
+    }
+}
