@@ -1,0 +1,31 @@
+Q #1) What is Jenkins?
+Jenkins is a free open source Continuous Integration tool and automation server to monitor continuous integration and delivery. It is written in Java.
+t is known as an automated Continuous Delivery tool that helps to build and test ,
+ it enables developers to continuously check in their code and also analyze the post-build actions
+ The automation testers can use to run their tests as soon as the new code is added or code is modified.
+ 
+ 
+ 
+ What is Continuous Integration in Jenkins?
+
+Answer: Continuous integration is the process of continuously checking-in the developer’s code into a version control system and triggering the build to check and identify bugs in the written code.
+
+
+This is a very quick process and also gives them a chance to fix the bugs. Jenkins is one such continuous integration tool. 
+
+What is Groovy in Jenkins?
+
+Groovy is the default scripting language that is being used in the development of JMeter Version 3.1.
+Currently Apache Groovy is the dynamic object-oriented programming language that is used as a scripting language for the Java platform. Apache Groovy comes with some useful features such as Java Compatibility and Development Support.
+=
+What is the difference between Continuous Integration, Continuous Delivery, and Continuous Deployment?
+Continuous Integration:
+
+Continuous Integration in Jenkins-->>(It involves keeping the latest copy of the source code at a commonly shared hub where all the developers can check to fetch out the latest change in order to avoid conflict.)
+
+Continuous Delivery:
+
+Continuous Delivery in Jenkins-->>(Manual Deployment to Production. It does not involve every change to be deployed.)
+ontinuous Deployment:
+
+Continuous Deployment in Jenkins->>(Automated Deployment to Production. Involves every change to be deployed automatically.)
