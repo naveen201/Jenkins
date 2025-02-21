@@ -20,10 +20,6 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    def timestamp = new Date().format("MMddHHmm")
-                    def reportFile = "report_${timestamp}.html"
-                }
                 withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                     script {
                         sh """
