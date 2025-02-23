@@ -1,0 +1,55 @@
+Using pytest-split for Smart Batching
+Instead of manually splitting files, pytest-split intelligently divides tests across multiple runs.
+It ensures equal execution time per batch (not just equal test count).
+✅ Best for: Large test suites with varying test execution times.
+leverage caching, parallelize tasks, and automate repetitive steps
+try running the pipeline from within a Docker image, or run it on a node which has all required tools already installed.
+This is to avoid installing any dependencies/tools at run time.
+
+=============================================
+
+pipeline {
+    agent any
+    options { timeout(time: 30, unit: 'MINUTES') }
+
+    stages {
+        stage('Clone Repository') {
+            steps { script { checkout scm } }
+        }
+
+        stage('Setup Environment') {
+            steps {
+                sh 'pip install -r requirements.txt pytest pytest-xdist pytest-split'
+            }
+        }
+
+        stage('Run Tests in Parallel') {
+            parallel {
+                stage('Batch 1') {
+                    steps {
+                        sh 'pytest --splits=4 --group=1 -n auto --junitxml=results_batch1.xml'
+                    }
+                }
+                stage('Batch 2') {
+                    steps {
+                        sh 'pytest --splits=4 --group=2 -n auto --junitxml=results_batch2.xml'
+                    }
+                }
+                stage('Batch 3') {
+                    steps {
+                        sh 'pytest --splits=4 --group=3 -n auto --junitxml=results_batch3.xml'
+                    }
+                }
+                stage('Batch 4') {
+                    steps {
+                        sh 'pytest --splits=4 --group=4 -n auto --junitxml=results_batch4.xml'
+                    }
+                }
+            }
+        }
+
+        stage('Aggregate Results') {
+            steps { junit 'results_*.xml' }
+        }
+    }
+}
