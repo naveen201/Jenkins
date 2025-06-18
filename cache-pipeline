@@ -1,0 +1,45 @@
+=====================================================================================================================
+ Step-by-Step Execution in Jenkins Pipeline
+
+1========First Build (Cache Miss)=============================
+The cache is empty initially.
+Jenkins downloads all dependencies from npm registry.
+Saves the downloaded tarballs (~/.npm) in the cache.
+Installs dependencies using npm ci (removes node_modules first).
+
+2=======Subsequent Builds (Cache Hit)=======================
+Jenkins restores cached ~/.npm, skipping dependency downloads.
+npm ci installs packages from the cache, reducing install time.
+If dependencies haven't changed, builds are significantly faster.
+If dependencies changed (package-lock.json is modified):
+->npm ci detects changes and downloads only new dependencies.
+->Cache gets updated with new dependencies.
+
+==================================================================================
+How It Works in a Jenkins Declarative Pipeline
+
+pipeline {
+    agent any
+    environment {
+        NPM_CACHE = "${WORKSPACE}/.npm"  // Define local cache directory
+    }
+    stages {
+        stage('Setup NPM Cache') {
+            steps {
+                sh 'npm config set cache $NPM_CACHE'  // Configure npm to use local cache
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                cache(path: '.npm', key: 'npm-cache') {  // Cache ~/.npm directory
+                    sh 'npm ci'  // Install dependencies from cache or registry
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm run build'  // Run the build process
+            }
+        }
+    }
+}
